@@ -1,0 +1,18 @@
+# 系统垃圾
+Thumbs.db
+Desktop.ini
+.DS_Store
+
+# 编辑器 / 工具
+.vscode/
+.idea/
+*.tmp
+*.log
+
+# 本技能零依赖；出现 node_modules 一定是误操作
+node_modules/
+
+# 批量替换 / 自测留下的临时产物
+*.tmp-rename
+*.tmp-fix
+*.tmp-*

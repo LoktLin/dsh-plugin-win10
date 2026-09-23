@@ -1,0 +1,71 @@
+{
+  "skill_name": "dsh-plugin-win10",
+  "note": "评测场景固定为「**其他 AI（全新上下文、无本会话记忆）**拿到这个技能后能不能做对」。因此全部用 fresh subagent 跑，不用 fork。",
+  "evals": [
+    {
+      "id": 0,
+      "eval_name": "eval-0-full-build",
+      "prompt": "我在用 DSH（DeepSeek Harness）的 web GUI，想给自己加个小工具，插件包名 dsh-clock。要求：① agent 能调用一个工具拿到当前时间；② Web 界面侧边栏里有一个入口，点开弹出一个小面板显示时间和服务端的一些信息。请把完整的插件包写到 D:\\dsh-eval\\eval-0-full-build 下，我直接软链装上就能用。",
+      "expected_output": "一个完整可装的 DSH 插件包：package.json（含 dsh.bundle.patch 与 dsh.client.platform=web、exports[./client] 指向真实文件）、cordis.patch.yml（顶层数组、insert 的 id/name 与包名一致）、Host 半边 index.js、Client 半边 lib/client.js。",
+      "files": [],
+      "assertions": [
+        "package.json 是合法 JSON，且 dsh.bundle.patch 指向一个真实存在的文件",
+        "package.json 声明了 dsh.client.platform === \"web\"，且 exports[\"./client\"] 指向真实存在的文件",
+        "cordis.patch.yml 是顶层数组，insert 项的 id/name 与包名一致",
+        "Host 半边是 ESM 且导出 name / inject / apply 三件套",
+        "Host 用 ctx.inject(...) + ctx.effect(() => 注册, label) 注册副作用，而不是裸调",
+        "工具返回值不含 undefined / NaN / Infinity / -0（lossless JSON 纪律）",
+        "HTTP 路由回 {ok:true,data} 信封，并且有本机访问守卫（host 头白名单）",
+        "Client 半边通过 window.__ModuleLoader__.load({id, factory}) 注册，且 id 等于包名",
+        "Client 导出 name / inject / apply，apply 返回 cleanup 且在挂载失败时只 warn 不 throw",
+        "能说明改 Host 要重启 dsh web、改 Client 要刷新页面"
+      ]
+    },
+    {
+      "id": 1,
+      "eval_name": "eval-1-slot-choice",
+      "prompt": "DSH 的 web 界面，我想在左侧边栏底部加一个入口按钮，点开弹出一个浮层显示状态信息。这种需求官方推荐的扩展点是什么？具体该注册到哪、怎么写？把方案和代码写到 D:\\dsh-eval\\eval-1-slot-choice 下。",
+      "expected_output": "指出官方槽位系统 ctx.slots，并给出侧边栏入口与全局浮层的正确槽位（sidebar.footer.action / shell.overlay），附可用的注册代码与回收要点。",
+      "files": [],
+      "assertions": [
+        "明确提到官方槽位系统（ctx.slots / SlotRegistry / slot），而不是只讲 DOM 注入",
+        "为「侧边栏入口」给出 list 型槽位 sidebar.footer.action（或明确说明 sidebar.workspaces/settings 已被占用、不可用）",
+        "为「全局浮层」给出 shell.overlay",
+        "警告不要注册到 root（会遮蔽整个 AppFrame）",
+        "给出 ctx.slots.inject(key, cb) + ctx.slots.register({name,id,order}, Component) 的实际调用形式",
+        "说明 list 型槽位注册必须带 id，且注册返回的 disposer 必须被回收",
+        "没有把「DOM 注入 + MutationObserver」当作首要/唯一方案"
+      ]
+    },
+    {
+      "id": 2,
+      "eval_name": "eval-2-diagnose",
+      "prompt": "我给 DSH 写了个插件（包名 dsh-mytool），用软链装进 web profile 了，重启 dsh web 之后，agent 的工具列表里没有我的工具。帮我把可能原因和排查步骤列出来，按优先级排序，每一步给出具体命令或检查点。输出写到 D:\\dsh-eval\\eval-2-diagnose。",
+      "expected_output": "一份按优先级排序的排查清单：先确认插件是否进了配置树，再查 patch/exports/声明，再查 Host 注册是否抛错，最后才是重装。",
+      "files": [],
+      "assertions": [
+        "第一步是确认插件有没有真的进配置树（如 dsh --profile web --dump-config，或等价手段），而不是先重装",
+        "检查 cordis.patch.yml（是否存在该行、id/name 是否一致、disabled 是否为 true）",
+        "提到 dsh.bundle.patch / dsh.client / exports[\"./client\"] 这类声明缺失会导致静默不生效或启动期报错",
+        "明确 Host 半边是 dsh web 启动时加载的快照，必须重启（而不是刷新页面）",
+        "指出 Host 侧注册抛错可能只体现在控制台 warn，不会让工具出现",
+        "给出的是可执行的命令或明确检查点，而不是泛泛的「检查配置」",
+        "提到软链本身可能失效（路径不存在/指向错误）这一基础项"
+      ]
+    },
+    {
+      "id": 3,
+      "eval_name": "eval-3-core-update",
+      "prompt": "我刚把 DSH 本体升级到了新版本（dsh web 已经重启过了），之前装好的几个插件表面上看都还在，但我不确定我们依赖的官方 API 有没有静默失效。帮我做一次升级后的契约检查，告诉我有没有要改的、改哪里，以及改完之后要做什么收尾。把过程和结论写到 D:\\dsh-eval\\eval-3-core-update。",
+      "expected_output": "先跑 probe-contracts.mjs 与基线对比，按 新增/签名变更/移除/语义变更 定级并分别处置，结合使用面扫描确定要改的文件，复验全绿后才 --save-baseline 更新基线。",
+      "files": [],
+      "assertions": [
+        "第一步是跑探针（probe-contracts.mjs）与基线对比，而不是凭插件「看着还在」下结论",
+        "对变化按 新增/签名变更/移除/语义变更（或等价分类）给出不同处置",
+        "能结合探针的使用面扫描指出哪个文件在用变化的 API",
+        "知道复验全绿后才 --save-baseline（基线代表已知良好，坏状态存基线是静默失效）",
+        "知道兼容决策：只给自己用的插件默认不做兼容；能力探测优先于版本号判断"
+      ]
+    }
+  ]
+}
