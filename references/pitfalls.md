@@ -195,7 +195,7 @@ patch 改动本来就不需要重启。先查装配（0.1），再谈重启。
 ## W 类：Windows 10 / PowerShell 5.1 实测坑（2026-09-23 真撞的）
 
 > 这一节是技能改名成 `dsh-plugin-win10` 的原因。每条都是在这台机器上真踩的，不是理论。
-> 完整版（含「工具怎么设计才方便 AI 调」12 条）在 `references/tool-design-for-ai.md`。
+> 完整版（含「工具怎么设计才方便 AI 调」13 条）在 `references/tool-design-for-ai.md`。
 
 ### W1. PowerShell 没有 heredoc
 

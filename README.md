@@ -19,7 +19,7 @@
 | 给 DSH 加几个工具 / 加段系统提示 / 加个 HTTP 路由 | Host 半边写法 + 三条硬约束（lossless JSON / JSON Schema / 别硬依赖） |
 | 给 Web GUI 加面板、入口、浮层 | Client 半边（槽位路线 与 DOM 注入路线怎么选）+ 主题令牌 + 副作用回收 |
 | **「文件都在，但什么也没发生」** | 装配机制（`dsh.profile.bundles` / `cordis.patch.yml`）+ 生效边界表 + 五分钟排障 |
-| **工具写完了，但 AI 老调错、一次调用拿不全** | **`references/tool-design-for-ai.md`**：12 条实测经验 + 三条可用测试钉住的不变量 |
+| **工具写完了，但 AI 老调错、一次调用拿不全** | **`references/tool-design-for-ai.md`**：13 条实测经验 + 四条可用测试钉住的不变量 |
 | Windows 上被 PowerShell 各种咬 | **`pitfalls.md` 的 W 类**：8 条真撞过的坑（heredoc、`node -e` 引号、管道骗 exit code…） |
 | DSH 升级后插件行为变了 | 契约探针 + 六步兼容工作流（发现更新 → 跑探针 → 读官方信息 → 定级处置 → 复验更新基线） |
 
@@ -29,7 +29,7 @@
 dsh-plugin-win10/
 ├─ SKILL.md                          ← 主入口（0 选形态 → 1 选路线 → 2 五步流程 → 3 生效边界 → 4 验证矩阵 → 排障）
 ├─ references/
-│  ├─ tool-design-for-ai.md          ← ★ 「让 AI 调得顺」的 12 条实测经验 + Windows 8 条坑
+│  ├─ tool-design-for-ai.md          ← ★ 「让 AI 调得顺」的 13 条实测经验 + Windows 8 条坑
 │  ├─ contracts.md                   ← 官方精确契约（槽位全目录 / 路由 / 工具 / dsh.client）
 │  ├─ lightweight-path.md            ← A 路线（无构建、DOM 注入）逐层解剖
 │  ├─ standard-path.md               ← B 路线（TS + tsdown + React + 槽位）

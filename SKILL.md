@@ -137,13 +137,14 @@ ctx.inject(['sessions'], (sub) => { /* sessions.get(agent.id).header.cwd */ });
 2. **一次调用**，能不能拿到我想要的东西？
 3. 这个返回，**值不值它占的那点上下文**？
 
-**三条不变量**（建议在 smoke/单测里**断言**它们，否则下一个加 op 的人会顺手破坏，而且**不会有任何报错**，只是变回难用）：
+**四条不变量**（建议在 smoke/单测里**断言**它们，否则下一个加 op 的人会顺手破坏，而且**不会有任何报错**，只是变回难用）：
 
 | 不变量 | 怎么做 | 反例 |
 |---|---|---|
 | **参数名不撞车** | 同一领域里「同一个词指两个东西」时，**造两个不同的词**，并在两处描述里互相点名 | `level`（地图关卡 ID）与 `which`（玩法第几关）撞车 → 改名 `stage` |
 | **大返回能瘦身** | 给 `summaryOnly:true`（**默认行为一字节不改**），且**只去体积、不去结论** | `op=levels` 18 917 B → 3 126 B；`metrics` 去分箱但留 `core`/`hotBin` |
 | **描述里能照抄** | 每个工具 description 末尾给一条 **`典型调用`** 的 JSON | 只讲「为什么」→ AI 还得自己拼参数 |
+| **提示段不漏工具** | 系统提示段**从数据生成** + 断言「不在豁免表里的工具必须有一条『什么时候用』」 | 手写一段提示 → **漏了 4 个版本**，两个工具在 AI 开场提示里根本没指路 |
 
 另外六条同样重要（详见 `references/tool-design-for-ai.md`）：
 
@@ -312,7 +313,7 @@ curl.exe "http://127.0.0.1:3080/mytool/status"
 
 | 文件 | 何时读 |
 |---|---|
-| `references/tool-design-for-ai.md` | **写工具时先读这个**：12 条「让 AI 调得顺」的实测经验（参数名 / 瘦身 / 典型调用 / 判据唯一 / 一次调用 / 回执自证 / 静默 vs 报错 / 不下判决 / 测试纪律）+ **Windows 与 PowerShell 5.1 的 8 条坑** |
+| `references/tool-design-for-ai.md` | **写工具时先读这个**：13 条「让 AI 调得顺」的实测经验（参数名 / 瘦身 / 典型调用 / **系统提示段这第二条通道** / 判据唯一 / 一次调用 / 回执自证 / 静默 vs 报错 / 不下判决 / 测试纪律）+ **Windows 与 PowerShell 5.1 的 8 条坑** |
 | `references/contracts.md` | 要 `ctx.slots` / `webServer` / 工具 / `dsh.client` 的**精确契约**时；含**本机实测的槽位全目录** |
 | `references/lightweight-path.md` | 走 A 路线时；**蛋仔面板（dsh-eggy）逐层解剖**，含 DOM 注入自愈、主题合成、面板结构 |
 | `references/standard-path.md` | 走 B 路线时；TS + tsdown + React + 槽位注册的完整写法 |
