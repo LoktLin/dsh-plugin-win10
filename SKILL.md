@@ -123,6 +123,9 @@ ctx.inject(['sessions'], (sub) => { /* sessions.get(agent.id).header.cwd */ });
 三条硬约束，违反不会报语法错但会出事：
 
 - **工具返回值必须是 lossless JSON**。`undefined` / `NaN` / `Infinity` / `-0` 都不是合法 JSON，宿主会拒收**整个结果**并报 `returned invalid output: value is not lossless JSON`。骨架里的 `lossless()` 就是干这个的，所有出口都要过它。
+- ★ **给"已有对象"打补丁 / 换实现**（本轮实测三坑）：补丁代码**必须放在被补对象定义之后**（对象是 `const` ⇒ 放前面 **TDZ 直接崩**）；
+  给工具的 `execute` 换实现要**显式 `/** @type {any} */`** 且**只传 `args`**（否则 TS2322 / TS2554）；**同步函数里不能 `await`**
+  ⇒ 用 `.catch()` 接成 `{ok:false,error}`（红线：**失败回执，不抛异常**）。
 - **`parameters` 必须是合法 JSON Schema**。把 `description` 误写成 `properties` 之类的笔误会让宿主在**注册期**抛错，严重时**连发消息都失败**——所以骨架带了自检。
 - **别硬依赖**。`inject` 只写"没有它我就没法工作"的服务；其余一律 `ctx.inject([...], sub => ...)` 惰性挂载，缺了就 `console.warn` 降级。插件加载失败会牵连整个 profile，代价远大于少一个功能。
 
@@ -154,10 +157,19 @@ ctx.inject(['sessions'], (sub) => { /* sessions.get(agent.id).header.cwd */ });
 - **危险操作默认安全**：`dryRun` 先给计划、真删双钥匙、不需要动就一个字节都不动。
 - **按「谁错了」区分静默与报错**：调用方输入非法 → 大声报错；数据里混无关内容 → **静默忽略并如实报 `ignored`**。
 - **只报数字，不下判决**：阈值属于业务方；用测试断言输出里没有 `pass`/`reachable`/`verdict`。
+- ★★ **能力进 schema、长文下沉**：**不写进 schema 的参数 = AI 看不到 = 等于没有**。真实案例：某个"点名任意控件回子树"的参数
+  **实现早就写好了**，却因为当时的 schema 棘轮只能留在代码里 ⇒ **AI 整整一个版本调不出来**。棘轮用**软/硬双线**（40 / 50 KB），每次放宽记先例与理由。
+- ★★ **两种瘦身档必须对同一份数据给同一结论**：`summaryOnly`（去体积、留字段）与 `receipt:"min"`（换骨架、留结论）**可以并存，但要在 description 里互相点名**。
+  实测 bug：守卫把 `errors` 置 `null`（正确），**瘦身分支又从原始结果填了回来** ⇒ 全量说"没意义"、瘦身给 48 条带行号的报错，**AI 去追一个不属于本局的行号**。
+  修法：**在 `return` 前的汇合处收口**，别在各分支里各自赋值；并用测试钉住"两档一致"。
+- ★ **显式参数优先于环境解析**：调用方给了 `file`（绝对路径且存在）**就不该**因为"当前关卡没有日志目录"而抛错
+  —— **他已经指名道姓，别拿环境猜的结果否决他**。
+- **测试纪律两条**（实测）：① 断言"同一份数据"要**先发现再钉住**（列出来一份，再显式传给它），别写死关卡/文件名，也别拿两次各自解析的"最新"；
+  ② **夹具设过的环境变量会污染后面的真数据用例**（实测一个 `MILIASTRA_LOCALLOW` 让用例永远"扫不到日志"，**形同虚设却不报错**）⇒ 用完 `finally` 恢复。
 
-> ⚠️ 本机（Windows 10 / PowerShell 5.1）另有 8 条实测坑：**没有 heredoc**、**`node -e` 的引号会被吃掉**、
+> ⚠️ 本机（Windows 10 / PowerShell 5.1）另有 9 条实测坑：**没有 heredoc**、**`node -e` 的引号会被吃掉**、
 > **管道会骗 exit code**、`Get-Content` 默认 GBK、子进程 stdout 走 936 代码页、`$pid` 只读、
-> **改名/改技能前必须逐文件 SHA 备份**、**改名要扫全机引用**。→ `references/tool-design-for-ai.md` 附录。
+> **改名/改技能前必须逐文件 SHA 备份**、**改名要扫全机引用**、**PowerShell 双引号里的反引号是转义符**（`git commit -m "…\`file\`…"` 会少一个字符 ⇒ **提交信息一律走 `git commit -F <文件>`**）。→ `references/tool-design-for-ai.md` 附录。
 
 ### 第 4 步：写 Client 半边
 
@@ -340,3 +352,21 @@ node "$env:USERPROFILE\.dsh\skills\dsh-plugin-win10\scripts\probe-contracts.mjs"
 > 这部分原是独立技能 `dsh-core-update`，2026-09-12 并入本技能：它声称的触发词（"插件突然不生效/工具没注册"）
 > 与本技能 §6 的排障正面重叠，且同一批契约知识在两处各写一份、必然漂移。探针与自测脚本都在本技能 `scripts/` 下，
 > 改完探针/文档后跑 `node "$env:USERPROFILE\.dsh\skills\dsh-plugin-win10\scripts\test-skill.mjs"` 自检。
+
+---
+
+## 插件「生效口径」与「验收自证」（2026-09-29 实战沉淀）
+
+- **Host 改动必须重启 `dsh web`**（Host 是**启动快照**）；**纯 Client 改动 F5 通常够**。
+  判据：`miliastra_echo` 回的 `version` = **运行中 Host** 的版本；面板顶栏显示的就是它。
+  面板还是旧版本号 ⇒ 十有八九是**没重启**，不是没装上。
+- ★ **重启后别只看版本号** —— 要**跑一条新路径**才算真加载（本轮：`health brief` 看 `memoryDoc`、`asset op=measure`、`errors` 默认无 `forms`，三条各跑一次）。
+- ⚠️ **本机（软链安装）千万别用 `dsh plugin add <包>@<版本>` 去"升级"**：
+  profile 里是 `link:`/Junction 指向仓库 ⇒ 重装会把软链换成 npm 那份，**丢掉仓库即时联调**。
+  （查法：看 `~/.dsh/profiles/web/package.json` 的依赖写法与 `node_modules/<包>` 的 `LinkType`。）
+- ★ **AI 也能"看"界面**：用可用的截图工具截**宿主窗口**（例：`miliastra_shot {process:"chrome", window:"…"}`）
+  再读图 ⇒ 面板/页面外观**不必靠人贴图**。这类"我到底画成什么样"的问题，**截图一条就结案**。
+- ★ **工具回执契约**（本轮血的教训，已在本仓加门禁）：**回执必有 `ok`**；失败**回 `{ok:false,error}` 而不是抛异常**
+  （抛异常会打断调用方整轮）；**缺 `ok` 的回执**会让调用方按 `r.ok` 判定时**误报失败**。
+- **npm 发版**：本机凭据已记在 **`~/.npmrc`**（`//registry.npmjs.org/:_authToken=…`）⇒ `npm publish` 直接发；
+  **发布后 1~2 分钟内查到 404 是传播延迟**（不是失败）；**再发一次得到 403「不能覆盖已发布版本」反而证明它已经上去了**。

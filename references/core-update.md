@@ -216,10 +216,11 @@ node "$env:USERPROFILE\.dsh\skills\dsh-plugin-win10\scripts\test-skill.mjs" --js
 | 项 | 值 |
 |---|---|
 | dsh / cordis | `0.1.2-rc.1` / `4.0.2` |
-| 官方包数量 | 222 |
-| 槽位总数 | **52**（来自 13 个文件） |
+| 官方包数量 | 287 |
+| 槽位总数 | **90**（来自 13 个文件） |
 | 关键槽位 | `sidebar.footer.action`(list) · `shell.overlay`(list) · `root`(single, **禁注册**) |
 | profile | `bundles` 7 项 · `patchReload: live` |
 | 基线文件 | `~/.dsh/dsh-contract-baseline.json` |
 
 （这些值会随版本变——**探针每次都会重新取**，这张表只是让你一眼看出"是不是变了"。）
+> ★ 2026-10-07：按探针实测对齐过一次（**包 222 → 287 · 槽位 52 → 90**）—— 技能自检 `T3.3` 就是专门抓这种漂移的，红了一定要跑一次探针对齐，别手改数字。
