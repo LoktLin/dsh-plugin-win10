@@ -259,7 +259,7 @@ rec('T3.3', 'core-update.md 附录的数值（槽位数 / 官方包数）与探�
 //      一旦 SKILL.md 里提到**别的工程**的脚本（例如 `D:\lua_danzai\packages\dsh-eggy\scripts\test-entry-anchors.mjs`），
 //      它也会被当成技能自带的 → 报"不存在" → **假警报**。
 //      而假警报会训练人忽略测试，比没有检查更糟。
-//   ⇒ 现在按**路径形态**分流：裸 `scripts/x.mjs` 才相对技能目录；
+//   ⇒ 现在按**路径形态**分流：裸相对路径（不带盘符 / UNC / 环境变量）才相对技能目录；
 //      带盘符 / UNC / `$env:USERPROFILE` 的按那个绝对路径校验。
 const rawScriptPaths = [...new Set((docAll.match(/[^\s`"'()｜]*scripts[\\/][\w.-]+\.mjs/g) || []))];
 const resolveScriptRef = (raw) => {

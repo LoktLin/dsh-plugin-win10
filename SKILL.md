@@ -333,7 +333,7 @@ curl.exe "http://127.0.0.1:3080/mytool/status"
 | `references/ecosystem.md` | 想知道官方有哪些包、社区有哪些插件可以抄、怎么从官方仓库取证 |
 | `references/core-update.md` | DSH 本体升级后：六步契约兼容工作流（发现更新 → 跑探针 → 读官方信息 → 定级处置 → 复验+更新基线 → 跑自测）与兼容策略 |
 | `references/used-apis.md` | 要看"我们依赖哪些官方 API、失效了会怎么坏、谁在用、怎么 feature-detect"时 |
-| `references/release-doc-review.md` | **发版前 / 改了发布面文档（README、release notes、CHANGELOG）之后**：发布文档内检流程 —— 判定 5 条规则 · 四种处理（删 / 压缩 / 移维护者文档 / 改成读者动作）· 输出格式 · 五问自检。**维护者内容一律不许留在 README** |
+| `references/release-doc-review.md` | **发版前 / 改了发布面文档（README、release notes、CHANGELOG）之后**：发布文档内检流程 —— 判定 5 条规则 · 四种处理（删 / 压缩 / 移维护者文档 / 改成读者动作）· 输出格式 · 五问自检。配 **`scripts/scan-release.mjs`** 先跑机械扫描（敏感信息 / 技能外信息 / 断链 / 日期水印）。**维护者内容一律不许留在 README** |
 
 ## 8. DSH 本体升级了怎么办
 
@@ -369,5 +369,5 @@ node "$env:USERPROFILE\.dsh\skills\dsh-plugin-win10\scripts\probe-contracts.mjs"
   再读图 ⇒ 面板/页面外观**不必靠人贴图**。这类"我到底画成什么样"的问题，**截图一条就结案**。
 - ★ **工具回执契约**（本轮血的教训，已在本仓加门禁）：**回执必有 `ok`**；失败**回 `{ok:false,error}` 而不是抛异常**
   （抛异常会打断调用方整轮）；**缺 `ok` 的回执**会让调用方按 `r.ok` 判定时**误报失败**。
-- **npm 发版**：本机凭据已记在 **`~/.npmrc`**（`//registry.npmjs.org/:_authToken=…`）⇒ `npm publish` 直接发；
+- **npm 发版**：本机凭据已记在 **`~/.npmrc`**（npm 令牌行）⇒ `npm publish` 直接发；
   **发布后 1~2 分钟内查到 404 是传播延迟**（不是失败）；**再发一次得到 403「不能覆盖已发布版本」反而证明它已经上去了**。

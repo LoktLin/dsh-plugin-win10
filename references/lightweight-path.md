@@ -28,7 +28,7 @@ dsh-eggy/
 └── scripts/              # 自检与回归（check-schemas / check-client / regression / selftest）
 ```
 
-**值得抄的一点**：它有一整套 `scripts/check-*.mjs` + `scripts/regression.mjs`，把"契约检查"和"现场能力回归"分开跑。
+**值得抄的一点**：它有一整套自检脚本 —— 把"契约检查"（`check-*`）和"现场能力回归"（`regression`）分开跑。
 插件的复杂度一旦上去，**没有自检就只能靠人肉点面板**，而人对面板的耐心是有限的。
 
 ## 2. Host 半边
