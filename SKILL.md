@@ -325,7 +325,7 @@ curl.exe "http://127.0.0.1:3080/mytool/status"
 
 | 文件 | 何时读 |
 |---|---|
-| `references/tool-design-for-ai.md` | **写工具时先读这个**：13 条「让 AI 调得顺」的实测经验（参数名 / 瘦身 / 典型调用 / **系统提示段这第二条通道** / 判据唯一 / 一次调用 / 回执自证 / 静默 vs 报错 / 不下判决 / 测试纪律）+ **Windows 与 PowerShell 5.1 的 8 条坑** |
+| `references/tool-design-for-ai.md` | **写工具时先读这个**：13 条「让 AI 调得顺」的实测经验（参数名 / 瘦身 / 典型调用 / **系统提示段这第二条通道** / 判据唯一 / 一次调用 / 回执自证 / 静默 vs 报错 / 不下判决 / 测试纪律）+ **Windows 与 PowerShell 5.1 的 9 条坑** |
 | `references/contracts.md` | 要 `ctx.slots` / `webServer` / 工具 / `dsh.client` 的**精确契约**时；含**本机实测的槽位全目录** |
 | `references/lightweight-path.md` | 走 A 路线时；**蛋仔面板（dsh-eggy）逐层解剖**，含 DOM 注入自愈、主题合成、面板结构 |
 | `references/standard-path.md` | 走 B 路线时；TS + tsdown + React + 槽位注册的完整写法 |
@@ -333,6 +333,7 @@ curl.exe "http://127.0.0.1:3080/mytool/status"
 | `references/ecosystem.md` | 想知道官方有哪些包、社区有哪些插件可以抄、怎么从官方仓库取证 |
 | `references/core-update.md` | DSH 本体升级后：六步契约兼容工作流（发现更新 → 跑探针 → 读官方信息 → 定级处置 → 复验+更新基线 → 跑自测）与兼容策略 |
 | `references/used-apis.md` | 要看"我们依赖哪些官方 API、失效了会怎么坏、谁在用、怎么 feature-detect"时 |
+| `references/release-doc-review.md` | **发版前 / 改了发布面文档（README、release notes、CHANGELOG）之后**：发布文档内检流程 —— 判定 5 条规则 · 四种处理（删 / 压缩 / 移维护者文档 / 改成读者动作）· 输出格式 · 五问自检。**维护者内容一律不许留在 README** |
 
 ## 8. DSH 本体升级了怎么办
 
